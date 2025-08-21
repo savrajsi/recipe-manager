@@ -1,11 +1,16 @@
+'use client';
+
 import Link from 'next/link';
 import { DetailedRecipe } from '@/types/recipe';
+import FavoriteButton from './FavoriteButton';
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 interface RecipePageClientProps {
     recipe: DetailedRecipe;
 }
 
 export function RecipePageClient({ recipe }: RecipePageClientProps) {
+    const { isFavorite, toggleFavorite } = useFavorites();
     const totalTime = parseInt(recipe.prepTime) + parseInt(recipe.cookTime);
 
     // Calculate per-serving nutrition values (rounded to whole numbers)
@@ -45,9 +50,18 @@ export function RecipePageClient({ recipe }: RecipePageClientProps) {
                     </div>
 
                     <div className="p-8">
-                        <h1 className="text-4xl font-display font-normal text-cookbook-900 mb-4">
-                            {recipe.title}
-                        </h1>
+                        <div className="flex items-start justify-between mb-4">
+                            <h1 className="text-4xl font-display font-normal text-cookbook-900">
+                                {recipe.title}
+                            </h1>
+                            <FavoriteButton
+                                recipeId={recipe.id}
+                                isFavorite={isFavorite(recipe.id)}
+                                onToggle={toggleFavorite}
+                                size="lg"
+                                className="ml-4 p-2 hover:bg-cookbook-100 rounded-full transition-colors"
+                            />
+                        </div>
 
                         <p className="text-lg text-cookbook-600 mb-6 font-serif leading-relaxed">
                             {recipe.description}

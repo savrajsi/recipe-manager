@@ -1,12 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRecipeFilters } from '@/hooks/useRecipeFilters';
-import { useRecipes } from '@/hooks/useRecipes';
-import { useAllRecipes } from '@/hooks/useAllRecipes';
+import { useRecipes } from '@/contexts/RecipesContext';
+import { useFilters } from '@/contexts/FiltersContext';
+import { useRecipes as useFilteredRecipes } from '@/hooks/useRecipes';
 import { useProcessedRecipes } from '@/hooks/useProcessedRecipes';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
-import { useFilterCounts } from '@/hooks/useFilterCounts';
 import { Header } from '@/components/Header';
 import { PageHeader } from '@/components/PageHeader';
 import { FilterSection } from '@/components/FilterSection';
@@ -15,11 +14,11 @@ import { LoadingState } from '@/components/LoadingState';
 import { ErrorState } from '@/components/ErrorState';
 
 export default function HomePage() {
-    // Fetch ALL recipes for search suggestions (unfiltered)
-    const { allRecipes } = useAllRecipes();
+    // Get all recipes from context (single fetch, shared across app)
+    const { allRecipes, loading: allRecipesLoading, error: allRecipesError } = useRecipes();
 
-    // Custom hooks handle all the filtering logic
-    const filters = useRecipeFilters();
+    // Get filters from context (shared state)
+    const filters = useFilters();
 
     // Memoize filter objects to prevent unnecessary re-renders
     // Using JSON.stringify for array comparison - it's simpler and more reliable
@@ -40,39 +39,25 @@ export default function HomePage() {
 
     const processingFilters = useMemo(() => ({
         selectedDietary: filters.selectedDietary,
-        sortBy: filters.sortBy
+        sortBy: filters.sortBy,
+        showFavoritesOnly: filters.showFavoritesOnly
     }), [
         selectedDietaryKey, // Use memoized key
-        filters.sortBy
-    ]);
-
-    const filterCountsInput = useMemo(() => ({
-        selectedTags: filters.selectedTags,
-        selectedDietary: filters.selectedDietary,
-        selectedDifficulty: filters.selectedDifficulty,
-        selectedMealTime: filters.selectedMealTime,
-        searchQuery: filters.searchQuery
-    }), [
-        selectedTagsKey, // Use memoized key
-        selectedDietaryKey, // Use memoized key
-        filters.selectedDifficulty,
-        filters.selectedMealTime,
-        filters.searchQuery
+        filters.sortBy,
+        filters.showFavoritesOnly
     ]);
 
     // Fetch filtered recipes for display
-    const { recipes, loading, error } = useRecipes(recipeFilters);
+    const { recipes, loading, error } = useFilteredRecipes(recipeFilters);
 
     const filteredRecipes = useProcessedRecipes(recipes, processingFilters);
 
     // Generate search suggestions from ALL recipes, not just filtered ones
     const searchSuggestions = useSearchSuggestions(allRecipes, filters.searchInput);
 
-    // Generate filter counts for progressive disclosure
-    const filterCounts = useFilterCounts(recipes, filterCountsInput);
-
     // Loading and error states
-    if (loading) return <LoadingState />;
+    if (allRecipesLoading || loading) return <LoadingState />;
+    if (allRecipesError) return <ErrorState error={allRecipesError} />;
     if (error) return <ErrorState error={error} />;
 
     return (
@@ -94,6 +79,7 @@ export default function HomePage() {
                     selectedMealTime={filters.selectedMealTime}
                     sortBy={filters.sortBy}
                     hasActiveFilters={filters.hasActiveFilters}
+                    showFavoritesOnly={filters.showFavoritesOnly}
                     onToggleTag={filters.toggleTag}
                     onToggleDietary={filters.toggleDietary}
                     onSetDifficulty={filters.setSelectedDifficulty}
@@ -101,10 +87,10 @@ export default function HomePage() {
                     onSetSort={filters.setSortBy}
                     onClearAll={filters.clearAllFilters}
                     onSearch={filters.executeSearch}
+                    onToggleFavoritesOnly={filters.toggleFavoritesOnly}
                     filteredCount={filteredRecipes.length}
                     totalCount={recipes.length}
                     currentSearchQuery={filters.searchQuery}
-                    filterCounts={filterCounts}
                 />
 
                 <RecipeGrid

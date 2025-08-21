@@ -1,6 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Metadata } from "next";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { RecipesProvider } from "@/contexts/RecipesContext";
+import { FiltersProvider } from "@/contexts/FiltersContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +28,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <RecipesProvider>
+          <FiltersProvider>
+            <FavoritesProvider>
+              {children}
+            </FavoritesProvider>
+          </FiltersProvider>
+        </RecipesProvider>
       </body>
     </html>
   );

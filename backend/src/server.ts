@@ -280,6 +280,15 @@ const filterRecipes = (recipes: Recipe[], query: RecipeQueryParams, ingredientsD
             return false;
         }
 
+        // Filter by meal time (check if recipe has the meal time tag)
+        if (query.mealTime) {
+            const mealTimeLower = query.mealTime.toLowerCase();
+            const hasMealTimeTag = recipe.tags.some(tag =>
+                tag.toLowerCase() === mealTimeLower
+            );
+            if (!hasMealTimeTag) return false;
+        }
+
         // Filter by tags
         if (query.tags) {
             const queryTags = query.tags.split(',').map(tag => tag.trim().toLowerCase());
@@ -316,7 +325,8 @@ app.get('/api/recipes', async (req: Request, res: Response) => {
             search: req.query.search as string,
             tags: req.query.tags as string,
             ingredients: req.query.ingredients as string,
-            difficulty: req.query.difficulty as 'easy' | 'medium' | 'hard'
+            difficulty: req.query.difficulty as 'easy' | 'medium' | 'hard',
+            mealTime: req.query.mealTime as string  // Added meal time support
         };
 
         // Filter recipes based on query parameters
@@ -362,6 +372,30 @@ app.get('/api/recipes/:identifier', async (req: Request, res: Response): Promise
         console.error('Error fetching recipe:', error);
         res.status(500).json({ error: 'Failed to fetch recipe' });
     }
+});
+
+// Cache management endpoints for development
+app.post('/api/cache/clear', (_req: Request, res: Response) => {
+    dataCache = null;
+    cacheTimestamp = 0;
+    console.log('🧹 Cache cleared manually');
+    res.json({
+        message: 'Cache cleared successfully',
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.get('/api/cache/status', (_req: Request, res: Response) => {
+    const now = Date.now();
+    const isValid = dataCache && (now - cacheTimestamp) < CACHE_DURATION;
+    const timeRemaining = isValid ? Math.round((CACHE_DURATION - (now - cacheTimestamp)) / 1000) : 0;
+
+    res.json({
+        cached: !!dataCache,
+        valid: isValid,
+        timeRemainingSeconds: timeRemaining,
+        lastRefreshed: cacheTimestamp ? new Date(cacheTimestamp).toISOString() : null
+    });
 });
 
 // Health check endpoint

@@ -1,9 +1,48 @@
-import { useState } from 'react';
-import { SortOption } from '@/lib/constants';
-import { useSearchWithSuggestions } from './useSearchWithSuggestions';
+'use client';
 
-export function useRecipeFilters() {
-    // Use the new search hook for enhanced search functionality
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { SortOption } from '@/lib/constants';
+import { useSearchWithSuggestions } from '@/hooks/useSearchWithSuggestions';
+
+interface FiltersContextType {
+    // Search state (from search hook)
+    searchInput: string;
+    searchQuery: string;
+    debouncedSearchTerm: string;
+
+    // Filter state
+    selectedTags: string[];
+    selectedDietary: string[];
+    selectedDifficulty: string;
+    selectedMealTime: string;
+    sortBy: SortOption;
+    hasActiveFilters: boolean;
+    showFavoritesOnly: boolean;
+
+    // Search actions
+    setSearchInput: (input: string) => void;
+    executeSearch: (query: string) => void;
+
+    // Filter setters
+    setSelectedDifficulty: (difficulty: string) => void;
+    setSelectedMealTime: (mealTime: string) => void;
+    setSortBy: (sort: SortOption) => void;
+
+    // Filter actions
+    toggleTag: (tag: string) => void;
+    toggleDietary: (dietary: string) => void;
+    toggleFavoritesOnly: () => void;
+    clearAllFilters: () => void;
+}
+
+const FiltersContext = createContext<FiltersContextType | undefined>(undefined);
+
+interface FiltersProviderProps {
+    children: ReactNode;
+}
+
+export function FiltersProvider({ children }: FiltersProviderProps) {
+    // Use the search hook for enhanced search functionality
     const searchHook = useSearchWithSuggestions();
 
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -11,6 +50,7 @@ export function useRecipeFilters() {
     const [selectedDifficulty, setSelectedDifficultyState] = useState<string>('');
     const [selectedMealTime, setSelectedMealTimeState] = useState<string>('');
     const [sortBy, setSortBy] = useState<SortOption>('newest');
+    const [showFavoritesOnly, setShowFavoritesOnly] = useState<boolean>(false);
 
     // Simple filter toggle functions
     const toggleTag = (tag: string) => {
@@ -37,6 +77,10 @@ export function useRecipeFilters() {
         setSelectedMealTimeState(newMealTime);
     };
 
+    const toggleFavoritesOnly = () => {
+        setShowFavoritesOnly(prev => !prev);
+    };
+
     // Custom executeSearch that clears all filters before searching
     const executeSearchWithFilterClear = (query: string) => {
         // Clear all existing filters when starting a new search
@@ -45,6 +89,7 @@ export function useRecipeFilters() {
         setSelectedDifficultyState('');
         setSelectedMealTimeState('');
         setSortBy('newest');
+        setShowFavoritesOnly(false);
 
         // Then execute the search
         searchHook.executeSearch(query);
@@ -57,6 +102,7 @@ export function useRecipeFilters() {
         setSelectedDifficultyState('');
         setSelectedMealTimeState('');
         setSortBy('newest');
+        setShowFavoritesOnly(false);
     };
 
     // Check if any filters are active
@@ -64,9 +110,10 @@ export function useRecipeFilters() {
         selectedDietary.length > 0 ||
         selectedDifficulty !== '' ||
         selectedMealTime !== '' ||
-        searchHook.searchQuery !== '';
+        searchHook.searchQuery !== '' ||
+        showFavoritesOnly;
 
-    return {
+    const value: FiltersContextType = {
         // Search state (from search hook)
         searchInput: searchHook.searchInput,
         searchQuery: searchHook.searchQuery,
@@ -79,6 +126,7 @@ export function useRecipeFilters() {
         selectedMealTime,
         sortBy,
         hasActiveFilters,
+        showFavoritesOnly,
 
         // Search actions
         setSearchInput: searchHook.setSearchInput,
@@ -92,6 +140,21 @@ export function useRecipeFilters() {
         // Filter actions
         toggleTag,
         toggleDietary,
+        toggleFavoritesOnly,
         clearAllFilters,
     };
+
+    return (
+        <FiltersContext.Provider value={value}>
+            {children}
+        </FiltersContext.Provider>
+    );
+}
+
+export function useFilters(): FiltersContextType {
+    const context = useContext(FiltersContext);
+    if (context === undefined) {
+        throw new Error('useFilters must be used within a FiltersProvider');
+    }
+    return context;
 }

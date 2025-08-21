@@ -1,12 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 import { RecipeWithNutrition } from '@/types/recipe';
-
+import FavoriteButton from './FavoriteButton';
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 interface RecipeCardProps {
   recipe: RecipeWithNutrition;
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+
   return (
     <Link href={`/recipes/${recipe.slug}`}>
       <div className="bg-white rounded-lg shadow-sm border border-cookbook-200 overflow-hidden hover:shadow-md hover:border-cookbook-300 transition-all duration-300 cursor-pointer group">
@@ -17,6 +22,15 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             alt={recipe.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
+          {/* Favorite Button Overlay */}
+          <div className="absolute top-3 right-3">
+            <FavoriteButton
+              recipeId={recipe.id}
+              isFavorite={isFavorite(recipe.id)}
+              onToggle={toggleFavorite}
+              className="bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white/90"
+            />
+          </div>
         </div>
 
         {/* Recipe Info */}

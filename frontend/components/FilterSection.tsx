@@ -1,32 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SortOption, FILTER_OPTIONS, TAG_GROUPS, MEAL_TIME_OPTIONS, POPULAR_INGREDIENTS } from '@/lib/constants';
 
-interface FilterCounts {
-    tags: Record<string, number>;
-    dietary: Record<string, number>;
-    difficulty: Record<string, number>;
-}
-
-// Custom TagDropdown Component with eBay-style styling
+// Simplified TagDropdown Component without counts
 interface TagDropdownProps {
     label: string;
     options: readonly string[];
     selectedTags: string[];
-    filterCounts?: FilterCounts;
     onToggleTag: (tag: string) => void;
 }
 
-// Single-select dropdown for difficulty and meal time
+// Simplified single-select dropdown without counts
 interface SingleSelectDropdownProps {
     label: string;
     options: readonly string[];
     selectedValue: string;
-    filterCounts?: FilterCounts;
     onSelect: (value: string) => void;
-    countType: 'difficulty' | 'tags'; // Which count object to use
 }
 
-function TagDropdown({ label, options, selectedTags, filterCounts, onToggleTag }: TagDropdownProps) {
+function TagDropdown({ label, options, selectedTags, onToggleTag }: TagDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -63,9 +54,7 @@ function TagDropdown({ label, options, selectedTags, filterCounts, onToggleTag }
             {isOpen && (
                 <div className="absolute top-full left-0 mt-1 bg-white border border-cookbook-200 rounded-lg shadow-lg z-50 min-w-[160px] max-h-64 overflow-y-auto">
                     {options.map(tag => {
-                        const count = filterCounts?.tags[tag] ?? 0;
                         const isSelected = selectedTags.includes(tag);
-                        const hasResults = count > 0 || isSelected;
 
                         return (
                             <button
@@ -75,7 +64,7 @@ function TagDropdown({ label, options, selectedTags, filterCounts, onToggleTag }
                                     // Keep dropdown open for multi-select
                                 }}
                                 className={`w-full text-left px-3 py-2 text-xs hover:bg-cookbook-50 flex items-center justify-between transition-colors text-cookbook-800 ${isSelected ? 'bg-cookbook-100 font-medium' : ''
-                                    } ${!hasResults && !isSelected ? 'opacity-60' : ''}`}
+                                    }`}
                             >
                                 <span className="flex items-center gap-2">
                                     {isSelected && (
@@ -85,9 +74,9 @@ function TagDropdown({ label, options, selectedTags, filterCounts, onToggleTag }
                                     )}
                                     {tag}
                                 </span>
-                                <span className="text-cookbook-500">
-                                    {isSelected ? '✓' : count > 0 ? `(${count})` : '(0)'}
-                                </span>
+                                {isSelected && (
+                                    <span className="text-cookbook-500">✓</span>
+                                )}
                             </button>
                         );
                     })}
@@ -97,7 +86,7 @@ function TagDropdown({ label, options, selectedTags, filterCounts, onToggleTag }
     );
 }
 
-function SingleSelectDropdown({ label, options, selectedValue, filterCounts, onSelect, countType }: SingleSelectDropdownProps) {
+function SingleSelectDropdown({ label, options, selectedValue, onSelect }: SingleSelectDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -158,11 +147,7 @@ function SingleSelectDropdown({ label, options, selectedValue, filterCounts, onS
 
                     {/* Individual options */}
                     {options.map(option => {
-                        const count = countType === 'difficulty'
-                            ? (filterCounts?.difficulty[option] ?? 0)
-                            : (filterCounts?.tags[option] ?? 0);
                         const isSelected = selectedValue === option;
-                        const hasResults = count > 0 || isSelected;
 
                         return (
                             <button
@@ -172,7 +157,7 @@ function SingleSelectDropdown({ label, options, selectedValue, filterCounts, onS
                                     setIsOpen(false);
                                 }}
                                 className={`w-full text-left px-3 py-2 text-xs hover:bg-cookbook-50 flex items-center justify-between transition-colors text-cookbook-800 capitalize ${isSelected ? 'bg-cookbook-100 font-medium' : ''
-                                    } ${!hasResults && !isSelected ? 'opacity-60' : ''}`}
+                                    }`}
                             >
                                 <span className="flex items-center gap-2">
                                     {isSelected && (
@@ -182,9 +167,9 @@ function SingleSelectDropdown({ label, options, selectedValue, filterCounts, onS
                                     )}
                                     {option}
                                 </span>
-                                <span className="text-cookbook-500">
-                                    {isSelected ? '✓' : count > 0 ? `(${count})` : '(0)'}
-                                </span>
+                                {isSelected && (
+                                    <span className="text-cookbook-500">✓</span>
+                                )}
                             </button>
                         );
                     })}
@@ -202,6 +187,7 @@ interface FilterSectionProps {
     selectedMealTime: string;
     sortBy: SortOption;
     hasActiveFilters: boolean;
+    showFavoritesOnly: boolean;
 
     // Filter actions
     onToggleTag: (tag: string) => void;
@@ -211,14 +197,12 @@ interface FilterSectionProps {
     onSetSort: (sort: SortOption) => void;
     onClearAll: () => void;
     onSearch: (query: string) => void;
+    onToggleFavoritesOnly: () => void;
 
     // Results info
     filteredCount: number;
     totalCount: number;
     currentSearchQuery?: string;
-
-    // Progressive disclosure
-    filterCounts?: FilterCounts;
 }
 
 export function FilterSection({
@@ -228,6 +212,7 @@ export function FilterSection({
     selectedMealTime,
     sortBy,
     hasActiveFilters,
+    showFavoritesOnly,
     onToggleTag,
     onToggleDietary,
     onSetDifficulty,
@@ -235,10 +220,10 @@ export function FilterSection({
     onSetSort,
     onClearAll,
     onSearch,
+    onToggleFavoritesOnly,
     filteredCount,
     totalCount,
-    currentSearchQuery,
-    filterCounts
+    currentSearchQuery
 }: FilterSectionProps) {
     return (
         <div className="mb-8 space-y-6">
@@ -304,9 +289,7 @@ export function FilterSection({
                         label="Difficulty"
                         options={FILTER_OPTIONS.difficulty}
                         selectedValue={selectedDifficulty}
-                        filterCounts={filterCounts}
                         onSelect={onSetDifficulty}
-                        countType="difficulty"
                     />
 
                     {/* Meal Time Dropdown */}
@@ -314,9 +297,7 @@ export function FilterSection({
                         label="Meal Time"
                         options={MEAL_TIME_OPTIONS}
                         selectedValue={selectedMealTime}
-                        filterCounts={filterCounts}
                         onSelect={onSetMealTime}
-                        countType="tags"
                     />
 
                     {/* Multi-Select Tag Dropdowns (Dietary, Style & Occasion) */}
@@ -335,11 +316,25 @@ export function FilterSection({
                                 label={displayText}
                                 options={group.tags}
                                 selectedTags={relevantSelections}
-                                filterCounts={filterCounts}
                                 onToggleTag={isDietaryGroup ? onToggleDietary : onToggleTag}
                             />
                         );
                     })}
+
+                    {/* Favorites Filter */}
+                    <button
+                        onClick={onToggleFavoritesOnly}
+                        className={`px-3 py-1.5 rounded text-xs font-medium transition-colors border flex items-center gap-1.5 ${showFavoritesOnly
+                                ? 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
+                                : 'bg-cookbook-100 text-cookbook-700 hover:bg-cookbook-200 border-cookbook-200'
+                            }`}
+                        title={showFavoritesOnly ? 'Show all recipes' : 'Show favorites only'}
+                    >
+                        <svg className="w-3 h-3" fill={showFavoritesOnly ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        {showFavoritesOnly ? 'Favorites Only' : 'Favorites'}
+                    </button>
 
                     {/* Clear Filters - Inline with dropdowns */}
                     {hasActiveFilters && (

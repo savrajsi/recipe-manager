@@ -67,3 +67,29 @@ export interface RecipeQueryParams {
     difficulty?: 'easy' | 'medium' | 'hard';
     mealTime?: string;
 }
+
+// Shopping List types
+export interface ShoppingListItem {
+    ingredientId: string;
+    name: string;
+    category: string;
+    totalAmount: number;
+    unit: string;
+    originalUnit: string; // Keep track of original unit for display
+    recipes: string[]; // Recipe IDs that use this ingredient
+    recipeNames: string[]; // Recipe names for better UX
+}
+
+export interface ShoppingList {
+    id: string;
+    items: ShoppingListItem[];
+    recipeIds: string[];
+    recipeNames: string[];
+    createdAt: string;
+    groupedByCategory: Record<string, ShoppingListItem[]>;
+}
+
+export interface ShoppingListRequest {
+    recipeIds: string[];
+    servingAdjustments?: Record<string, number>; // recipeId -> serving multiplier
+}

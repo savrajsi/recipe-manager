@@ -4,13 +4,22 @@ import Link from 'next/link';
 import { RecipeWithNutrition } from '@/types/recipe';
 import FavoriteButton from './FavoriteButton';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useShoppingList } from '@/contexts/ShoppingListContext';
 
 interface RecipeCardProps {
   recipe: RecipeWithNutrition;
+  showShoppingListSelection?: boolean;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, showShoppingListSelection = false }: RecipeCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { isRecipeSelected, toggleRecipeSelection } = useShoppingList();
+
+  const handleShoppingListToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleRecipeSelection(recipe.id);
+  };
 
   return (
     <Link href={`/recipes/${recipe.slug}`}>
@@ -22,8 +31,29 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             alt={recipe.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          {/* Favorite Button Overlay */}
-          <div className="absolute top-3 right-3">
+          {/* Action Buttons Overlay */}
+          <div className="absolute top-3 right-3 flex flex-col gap-2">
+            {showShoppingListSelection && (
+              <button
+                onClick={handleShoppingListToggle}
+                className={`p-2 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 flex items-center justify-center ${isRecipeSelected(recipe.id)
+                  ? 'bg-sage-500 text-white hover:bg-sage-600'
+                  : 'bg-white/80 text-cookbook-700 hover:bg-white/90'
+                  }`}
+                title={isRecipeSelected(recipe.id) ? 'Remove from shopping list' : 'Add to shopping list'}
+              >
+                <img
+                  src="/shopping-cart.svg"
+                  alt="Shopping cart"
+                  className="w-4 h-4"
+                  style={{
+                    filter: isRecipeSelected(recipe.id)
+                      ? 'brightness(0) invert(1)' // White for selected state
+                      : 'brightness(0) sepia(1) saturate(0.8) hue-rotate(15deg) brightness(0.6)' // Rich brown to match cookbook-700 (#7d6651)
+                  }}
+                />
+              </button>
+            )}
             <FavoriteButton
               recipeId={recipe.id}
               isFavorite={isFavorite(recipe.id)}

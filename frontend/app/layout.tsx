@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
 import { FiltersProvider } from "@/contexts/FiltersContext";
+import { ShoppingListProvider } from "@/contexts/ShoppingListContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <RecipesProvider>
           <FiltersProvider>
             <FavoritesProvider>
-              {children}
+              <ShoppingListProvider>
+                {children}
+              </ShoppingListProvider>
             </FavoritesProvider>
           </FiltersProvider>
         </RecipesProvider>

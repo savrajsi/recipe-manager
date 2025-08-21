@@ -57,3 +57,29 @@ export interface DetailedRecipe extends Omit<Recipe, 'ingredients'> {
     };
     caloriesPerServing: number;
 }
+
+// Shopping List types
+export interface ShoppingListItem {
+    ingredientId: string;
+    name: string;
+    category: string;
+    totalAmount: number;
+    unit: string;
+    originalUnit: string;
+    recipes: string[];
+    recipeNames: string[];
+}
+
+export interface ShoppingList {
+    id: string;
+    items: ShoppingListItem[];
+    recipeIds: string[];
+    recipeNames: string[];
+    createdAt: string;
+    groupedByCategory: Record<string, ShoppingListItem[]>;
+}
+
+export interface ShoppingListRequest {
+    recipeIds: string[];
+    servingAdjustments?: Record<string, number>;
+}

@@ -10,8 +10,10 @@ import {
     RecipeWithNutrition,
     DetailedRecipe,
     DetailedRecipeIngredient,
-    RecipeQueryParams
+    RecipeQueryParams,
+    ShoppingListRequest
 } from './types';
+import { generateShoppingList } from './shoppingListUtils';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -539,6 +541,76 @@ app.get('/api/cache/status', (_req: Request, res: Response) => {
         timeRemainingSeconds: timeRemaining,
         lastRefreshed: cacheTimestamp ? new Date(cacheTimestamp).toISOString() : null
     });
+});
+
+// Shopping list generation endpoint
+app.post('/api/shopping-list/generate', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { recipeIds, servingAdjustments = {} }: ShoppingListRequest = req.body;
+
+        if (!recipeIds || !Array.isArray(recipeIds) || recipeIds.length === 0) {
+            res.status(400).json({
+                error: 'Invalid request: recipeIds array is required and must not be empty'
+            });
+            return;
+        }
+
+        console.log(`🛒 Generating shopping list for ${recipeIds.length} recipes`);
+
+        const data = await getData();
+
+        // Validate that all recipe IDs exist
+        const invalidIds: string[] = [];
+        const validRecipes: Recipe[] = [];
+
+        recipeIds.forEach(id => {
+            const recipe = data.recipes.find(r => r.id === id);
+            if (recipe) {
+                validRecipes.push(recipe);
+            } else {
+                invalidIds.push(id);
+            }
+        });
+
+        if (invalidIds.length > 0) {
+            res.status(400).json({
+                error: 'Invalid recipe IDs found',
+                invalidIds,
+                validIds: validRecipes.map(r => r.id)
+            });
+            return;
+        }
+
+        // Validate serving adjustments
+        const invalidServingAdjustments: string[] = [];
+        Object.entries(servingAdjustments).forEach(([recipeId, multiplier]) => {
+            if (typeof multiplier !== 'number' || multiplier <= 0) {
+                invalidServingAdjustments.push(recipeId);
+            }
+        });
+
+        if (invalidServingAdjustments.length > 0) {
+            res.status(400).json({
+                error: 'Invalid serving adjustments: multipliers must be positive numbers',
+                invalidAdjustments: invalidServingAdjustments
+            });
+            return;
+        }
+
+        // Generate shopping list
+        const shoppingList = generateShoppingList(validRecipes, data.ingredients, servingAdjustments);
+
+        console.log(`✅ Generated shopping list with ${shoppingList.items.length} items across ${Object.keys(shoppingList.groupedByCategory).length} categories`);
+
+        res.json(shoppingList);
+
+    } catch (error) {
+        console.error('Error generating shopping list:', error);
+        res.status(500).json({
+            error: 'Internal server error while generating shopping list',
+            message: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
 });
 
 // Health check endpoint

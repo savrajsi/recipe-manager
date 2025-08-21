@@ -374,6 +374,149 @@ app.get('/api/recipes/:identifier', async (req: Request, res: Response): Promise
     }
 });
 
+// Utility function to scale ingredient amounts
+const scaleIngredientAmount = (amount: string, scaleFactor: number): string => {
+    const numAmount = parseAmount(amount);
+    const scaledAmount = numAmount * scaleFactor;
+
+    // Handle common fractions for better UX
+    const commonFractions: { [key: number]: string } = {
+        0.0625: '1/16',
+        0.083: '1/12',
+        0.1: '1/10',
+        0.111: '1/9',
+        0.125: '1/8',
+        0.143: '1/7',
+        0.167: '1/6',
+        0.1875: '3/16',
+        0.2: '1/5',
+        0.222: '2/9',
+        0.25: '1/4',
+        0.286: '2/7',
+        0.3: '3/10',
+        0.3125: '5/16',
+        0.333: '1/3',
+        0.375: '3/8',
+        0.4: '2/5',
+        0.4167: '5/12',
+        0.429: '3/7',
+        0.4375: '7/16',
+        0.444: '4/9',
+        0.5: '1/2',
+        0.5625: '9/16',
+        0.556: '5/9',
+        0.571: '4/7',
+        0.5833: '7/12',
+        0.6: '3/5',
+        0.625: '5/8',
+        0.6667: '2/3',
+        0.6875: '11/16',
+        0.7: '7/10',
+        0.714: '5/7',
+        0.75: '3/4',
+        0.778: '7/9',
+        0.8: '4/5',
+        0.8125: '13/16',
+        0.833: '5/6',
+        0.857: '6/7',
+        0.875: '7/8',
+        0.889: '8/9',
+        0.9: '9/10',
+        0.9167: '11/12',
+        0.9375: '15/16'
+    };
+
+    // Check if the scaled amount is close to a common fraction
+    for (const [decimal, fraction] of Object.entries(commonFractions)) {
+        if (Math.abs(scaledAmount - parseFloat(decimal)) < 0.01) {
+            return fraction;
+        }
+    }
+
+    // For mixed numbers (e.g., 1.5 -> 1 1/2)
+    if (scaledAmount >= 1) {
+        const wholePart = Math.floor(scaledAmount);
+        const fractionalPart = scaledAmount - wholePart;
+
+        for (const [decimal, fraction] of Object.entries(commonFractions)) {
+            if (Math.abs(fractionalPart - parseFloat(decimal)) < 0.01) {
+                return wholePart > 0 ? `${wholePart} ${fraction}` : fraction;
+            }
+        }
+    }
+
+    // Round to 2 decimal places and remove trailing zeros
+    return parseFloat(scaledAmount.toFixed(2)).toString();
+};
+
+// Scale a detailed recipe to a new serving size
+const scaleDetailedRecipe = (recipe: DetailedRecipe, newServings: number): DetailedRecipe => {
+    const scaleFactor = newServings / recipe.servings;
+
+    // Scale ingredients
+    const scaledIngredients = recipe.ingredients.map(ingredient => ({
+        ...ingredient,
+        amount: scaleIngredientAmount(ingredient.amount, scaleFactor)
+    }));
+
+    // Scale nutrition (total nutrition scales, per-serving stays the same)
+    const scaledTotalNutrition = {
+        calories: recipe.totalNutrition.calories * scaleFactor,
+        protein: recipe.totalNutrition.protein * scaleFactor,
+        carbs: recipe.totalNutrition.carbs * scaleFactor,
+        fat: recipe.totalNutrition.fat * scaleFactor
+    };
+
+    return {
+        ...recipe,
+        servings: newServings,
+        ingredients: scaledIngredients,
+        totalNutrition: scaledTotalNutrition,
+        // caloriesPerServing stays the same since it's per serving
+    };
+};
+
+// GET /api/recipes/:identifier/scale/:servings - get scaled recipe
+app.get('/api/recipes/:identifier/scale/:servings', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const data = await getData();
+        const { identifier, servings } = req.params;
+        const newServings = parseInt(servings);
+
+        // Validate servings
+        if (isNaN(newServings) || newServings < 1 || newServings > 50) {
+            res.status(400).json({ error: 'Invalid serving size. Must be between 1 and 50.' });
+            return;
+        }
+
+        // Find recipe by ID or slug
+        let recipe = data.recipes.find(r => r.id === identifier);
+        if (!recipe) {
+            recipe = data.recipes.find(r => r.slug === identifier);
+        }
+
+        if (!recipe) {
+            res.status(404).json({ error: 'Recipe not found' });
+            return;
+        }
+
+        // Create detailed recipe
+        const detailedRecipe = createDetailedRecipe(recipe, data.ingredients);
+        if (!detailedRecipe) {
+            res.status(500).json({ error: 'Failed to load recipe ingredients' });
+            return;
+        }
+
+        // Scale the recipe
+        const scaledRecipe = scaleDetailedRecipe(detailedRecipe, newServings);
+
+        res.json(scaledRecipe);
+    } catch (error) {
+        console.error('Error scaling recipe:', error);
+        res.status(500).json({ error: 'Failed to scale recipe' });
+    }
+});
+
 // Cache management endpoints for development
 app.post('/api/cache/clear', (_req: Request, res: Response) => {
     dataCache = null;

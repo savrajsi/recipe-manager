@@ -28,14 +28,26 @@ export function sortRecipes(recipes: RecipeWithNutrition[], sortBy: SortOption):
 
 /**
  * Filters recipes by dietary restrictions (AND logic - must match ALL selected dietary restrictions)
+ * Special case: When filtering for "vegetarian", also include "vegan" recipes since all vegan dishes are vegetarian
  */
 export function filterByDietary(recipes: RecipeWithNutrition[], selectedDietary: string[]): RecipeWithNutrition[] {
     if (selectedDietary.length === 0) return recipes;
 
     return recipes.filter(recipe =>
-        selectedDietary.every(dietary =>
-            recipe.tags.some(tag => tag.toLowerCase().includes(dietary.toLowerCase()))
-        )
+        selectedDietary.every(dietary => {
+            const dietaryLower = dietary.toLowerCase();
+
+            // Special case: if looking for vegetarian, also accept vegan recipes
+            if (dietaryLower === 'vegetarian') {
+                return recipe.tags.some(tag => {
+                    const tagLower = tag.toLowerCase();
+                    return tagLower.includes('vegetarian') || tagLower.includes('vegan');
+                });
+            }
+
+            // Standard dietary filtering for all other restrictions
+            return recipe.tags.some(tag => tag.toLowerCase().includes(dietaryLower));
+        })
     );
 }
 

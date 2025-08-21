@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { DetailedRecipe } from '@/types/recipe';
 import FavoriteButton from './FavoriteButton';
 import { ServingSizeControl } from './ServingSizeControl';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useRecipeScaling } from '@/hooks/useRecipeScaling';
+import { useShoppingList } from '@/contexts/ShoppingListContext';
 
 interface RecipePageClientProps {
     recipe: DetailedRecipe;
@@ -13,6 +15,12 @@ interface RecipePageClientProps {
 
 export function RecipePageClient({ recipe }: RecipePageClientProps) {
     const { isFavorite, toggleFavorite } = useFavorites();
+    const {
+        isRecipeSelected,
+        toggleRecipeSelection,
+        updateRecipeServings,
+        getRecipeServings
+    } = useShoppingList();
     const {
         currentServings,
         scaledRecipe,
@@ -26,6 +34,32 @@ export function RecipePageClient({ recipe }: RecipePageClientProps) {
     // Use scaled recipe if available, otherwise use original
     const displayRecipe = scaledRecipe || recipe;
     const totalTime = parseInt(displayRecipe.prepTime) + parseInt(displayRecipe.cookTime);
+
+    // Shopping cart functionality
+    const handleShoppingListToggle = () => {
+        if (isRecipeSelected(recipe.id)) {
+            // Remove from shopping list
+            toggleRecipeSelection(recipe.id);
+        } else {
+            // Add to shopping list with current serving size
+            toggleRecipeSelection(recipe.id);
+            if (isScaled) {
+                // Store the current scaled serving size
+                updateRecipeServings(recipe.id, currentServings);
+            }
+        }
+    };
+
+    // Sync serving size changes with shopping list if recipe is selected
+    useEffect(() => {
+        if (isRecipeSelected(recipe.id) && isScaled) {
+            const currentStoredServings = getRecipeServings(recipe.id);
+            // Only update if the stored servings are different from current servings
+            if (currentStoredServings !== currentServings) {
+                updateRecipeServings(recipe.id, currentServings);
+            }
+        }
+    }, [currentServings, isScaled, recipe.id, isRecipeSelected, updateRecipeServings, getRecipeServings]);
 
     // Calculate per-serving nutrition values (rounded to whole numbers)
     const perServingNutrition = {
@@ -68,13 +102,41 @@ export function RecipePageClient({ recipe }: RecipePageClientProps) {
                             <h1 className="text-4xl font-display font-normal text-cookbook-900">
                                 {displayRecipe.title}
                             </h1>
-                            <FavoriteButton
-                                recipeId={recipe.id}
-                                isFavorite={isFavorite(recipe.id)}
-                                onToggle={toggleFavorite}
-                                size="lg"
-                                className="ml-4 p-2 hover:bg-cookbook-100 rounded-full transition-colors"
-                            />
+                            <div className="flex items-center space-x-2 ml-4">
+                                {/* Shopping Cart Button */}
+                                <button
+                                    onClick={handleShoppingListToggle}
+                                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${isRecipeSelected(recipe.id)
+                                        ? 'bg-sage-500 text-white hover:bg-sage-600'
+                                        : 'hover:bg-cookbook-100 text-cookbook-700'
+                                        }`}
+                                    title={
+                                        isRecipeSelected(recipe.id)
+                                            ? `Remove from shopping list${isScaled ? ` (${currentServings} servings)` : ''}`
+                                            : `Add to shopping list${isScaled ? ` (${currentServings} servings)` : ''}`
+                                    }
+                                >
+                                    <img
+                                        src="/shopping-cart.svg"
+                                        alt="Shopping cart"
+                                        className="w-6 h-6"
+                                        style={{
+                                            filter: isRecipeSelected(recipe.id)
+                                                ? 'brightness(0) invert(1)' // White for selected state
+                                                : 'brightness(0) sepia(1) saturate(0.8) hue-rotate(15deg) brightness(0.6)', // Rich brown to match cookbook-700
+                                            transition: 'filter 200ms ease-in-out'
+                                        }}
+                                    />
+                                </button>
+                                {/* Favorite Button */}
+                                <FavoriteButton
+                                    recipeId={recipe.id}
+                                    isFavorite={isFavorite(recipe.id)}
+                                    onToggle={toggleFavorite}
+                                    size="lg"
+                                    className="p-2 hover:bg-cookbook-100 rounded-full transition-colors"
+                                />
+                            </div>
                         </div>
 
                         <p className="text-lg text-cookbook-600 mb-6 font-serif leading-relaxed">
@@ -178,14 +240,7 @@ export function RecipePageClient({ recipe }: RecipePageClientProps) {
                                         </svg>
                                     )}
                                 </div>
-                                {isScaled && (
-                                    <button
-                                        onClick={resetToOriginal}
-                                        className="text-xs text-sage-600 hover:text-sage-800 underline transition-colors"
-                                    >
-                                        Reset
-                                    </button>
-                                )}
+
                             </div>
                         </div>
 

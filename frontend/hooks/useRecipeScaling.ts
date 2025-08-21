@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DetailedRecipe } from '@/types/recipe';
 
 interface UseRecipeScalingReturn {
@@ -16,6 +16,7 @@ export function useRecipeScaling(originalRecipe: DetailedRecipe): UseRecipeScali
     const [scaledRecipe, setScaledRecipe] = useState<DetailedRecipe | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const isScaled = currentServings !== originalRecipe.servings;
 
@@ -53,10 +54,24 @@ export function useRecipeScaling(originalRecipe: DetailedRecipe): UseRecipeScali
         }
 
         setCurrentServings(servings);
-        fetchScaledRecipe(servings);
+
+        // Clear existing timeout
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
+        // Debounce the API call by 300ms
+        debounceTimeoutRef.current = setTimeout(() => {
+            fetchScaledRecipe(servings);
+        }, 300);
     }, [fetchScaledRecipe]);
 
     const resetToOriginal = useCallback(() => {
+        // Clear any pending debounced API call
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
         setCurrentServings(originalRecipe.servings);
         setScaledRecipe(null);
         setError(null);
@@ -68,6 +83,15 @@ export function useRecipeScaling(originalRecipe: DetailedRecipe): UseRecipeScali
             setError(null);
         }
     }, [currentServings, error]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, []);
 
     return {
         currentServings,

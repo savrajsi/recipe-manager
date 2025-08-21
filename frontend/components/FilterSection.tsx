@@ -325,8 +325,8 @@ export function FilterSection({
                     <button
                         onClick={onToggleFavoritesOnly}
                         className={`px-3 py-1.5 rounded text-xs font-medium transition-colors border flex items-center gap-1.5 ${showFavoritesOnly
-                                ? 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
-                                : 'bg-cookbook-100 text-cookbook-700 hover:bg-cookbook-200 border-cookbook-200'
+                            ? 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
+                            : 'bg-cookbook-100 text-cookbook-700 hover:bg-cookbook-200 border-cookbook-200'
                             }`}
                         title={showFavoritesOnly ? 'Show all recipes' : 'Show favorites only'}
                     >

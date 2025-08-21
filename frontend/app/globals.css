@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #faf8f5;
+  --foreground: #3d2f23;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #faf8f5;
+    --foreground: #3d2f23;
+  }
+}
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--foreground);
+    background-color: var(--background);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+  }
+}

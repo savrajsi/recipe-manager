@@ -83,4 +83,51 @@ Good luck! We're excited to see your implementation.
 
 ## Candidate Notes 
 
+### Setup Instructions
+No additional requirements beyond the original setup. The application uses the provided Next.js + Express.js stack with TypeScript throughout.
+
+### Implementation Choices
+- **State Management**: Used React Context API for global state (favorites, filters, shopping lists) to avoid prop drilling
+- **Styling**: Tailwind CSS with custom cookbook-themed color palette for consistent design
+- **Performance**: Implemented backend caching (30min TTL) and debounced search to reduce API calls
+- **Architecture**: Clean separation between frontend/backend with typed API contracts and reusable components
+- **Data Processing**: Built intelligent ingredient aggregation with unit conversion for shopping lists
+
+### Completed Features
+**Core Features (All Complete):**
+- ✅ Recipe list display with pagination and grid layout
+- ✅ Detailed recipe view with full ingredient and instruction information  
+- ✅ Comprehensive search/filter by name, tags, ingredients, difficulty, and meal time
+- ✅ Nutritional information calculated from ingredients with unit-aware conversions
+
+**Advanced Features (All Complete):**
+- ✅ Dietary restriction filters (vegetarian, vegan, gluten-free) with smart vegan→vegetarian logic
+- ✅ Shopping list generator with intelligent ingredient aggregation and unit conversion
+- ✅ Recipe scaling functionality with fraction handling and real-time API updates
+- ✅ Recipe favoriting with localStorage persistence
+- ✅ Multiple sorting options (prep time, difficulty, date added, alphabetical)
+- ✅ Additional: Search suggestions, responsive design, loading states, error handling
+
+### Assumptions Made
+- Nutrition data in ingredients represents standard serving sizes (100g for proteins, 1 cup for baking ingredients, etc.)
+- Recipe scaling maintains proportional relationships for all ingredients
+- Shopping list aggregates ingredients by compatible units (volume with volume, weight with weight)
+- Users prefer whole numbers or fractions for nutrition display rather than decimals
+- Vegan recipes are also vegetarian by nature
+
+### Known Limitations
+- Shopping list only works with original recipe amounts (scaling integration was removed for stability)
+- Unit conversions are limited to common cooking measurements
+- No user authentication or recipe creation functionality
+- Print functionality for shopping lists only shows duplicates of the first page
+
+### Additional Features with More Time
+- Complete working version of scaled shopping list ingredients
+- User accounts and recipe creation/editing
+- Advanced meal planning with calendar integration
+- Grocery store aisle organization for shopping lists
+- Recipe ratings and reviews system
+- Nutritional goal tracking and recommendations
+- Recipe import from URLs or photos
+- Social sharing and recipe collections
 

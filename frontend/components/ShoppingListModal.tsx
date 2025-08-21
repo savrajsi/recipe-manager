@@ -14,7 +14,6 @@ export function ShoppingListModal({ isOpen, onClose }: ShoppingListModalProps) {
         currentShoppingList,
         isGenerating,
         clearShoppingList,
-        selectedRecipeServings,
         error,
         clearError
     } = useShoppingList();
@@ -211,15 +210,9 @@ export function ShoppingListModal({ isOpen, onClose }: ShoppingListModalProps) {
                                 <div className="space-y-1">
                                     {currentShoppingList.recipeNames.map((recipeName, index) => {
                                         const recipeId = currentShoppingList.recipeIds[index];
-                                        const customServings = selectedRecipeServings[recipeId];
                                         return (
                                             <div key={recipeId} className="text-sm text-cookbook-600">
                                                 {recipeName}
-                                                {customServings && (
-                                                    <span className="ml-2 px-2 py-1 bg-sage-100 text-sage-700 rounded-full text-xs font-medium">
-                                                        {customServings} servings
-                                                    </span>
-                                                )}
                                             </div>
                                         );
                                     })}

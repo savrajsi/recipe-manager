@@ -12,11 +12,6 @@ interface ShoppingListContextType {
     isRecipeSelected: (recipeId: string) => boolean;
     selectedCount: number;
 
-    // Recipe serving adjustments
-    selectedRecipeServings: Record<string, number>; // recipeId -> servings
-    updateRecipeServings: (recipeId: string, servings: number) => void;
-    getRecipeServings: (recipeId: string) => number | undefined;
-
     // Shopping list generation
     currentShoppingList: ShoppingList | null;
     isGenerating: boolean;
@@ -41,7 +36,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
     const [selectedRecipes, setSelectedRecipes] = useState<string[]>([]);
-    const [selectedRecipeServings, setSelectedRecipeServings] = useState<Record<string, number>>({});
     const [currentShoppingList, setCurrentShoppingList] = useState<ShoppingList | null>(null);
 
     const [isGenerating, setIsGenerating] = useState(false);
@@ -56,11 +50,6 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
                 setSelectedRecipes(JSON.parse(savedSelected));
             }
 
-            const savedServings = localStorage.getItem('shopping-list-recipe-servings');
-            if (savedServings) {
-                setSelectedRecipeServings(JSON.parse(savedServings));
-            }
-
             const currentList = localStorage.getItem('shopping-list-current');
             if (currentList) {
                 setCurrentShoppingList(JSON.parse(currentList));
@@ -69,7 +58,6 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
             console.error('Error loading shopping list data from localStorage:', error);
             // Clear corrupted data
             localStorage.removeItem('shopping-list-selected-recipes');
-            localStorage.removeItem('shopping-list-recipe-servings');
             localStorage.removeItem('shopping-list-current');
         }
         setIsLoaded(true);
@@ -81,13 +69,6 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
             localStorage.setItem('shopping-list-selected-recipes', JSON.stringify(selectedRecipes));
         }
     }, [selectedRecipes, isLoaded]);
-
-    // Save recipe servings to localStorage
-    useEffect(() => {
-        if (isLoaded) {
-            localStorage.setItem('shopping-list-recipe-servings', JSON.stringify(selectedRecipeServings));
-        }
-    }, [selectedRecipeServings, isLoaded]);
 
     // Save current shopping list to localStorage
     useEffect(() => {
@@ -102,28 +83,18 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
 
 
 
-    // Auto-generate shopping list when selected recipes or servings change
+    // Auto-generate shopping list when selected recipes change
     useEffect(() => {
         if (isLoaded && selectedRecipes.length > 0) {
-            // Create serving adjustments from selected recipe servings
-            const servingAdjustments: Record<string, number> = {};
-            selectedRecipes.forEach(recipeId => {
-                const customServings = selectedRecipeServings[recipeId];
-                if (customServings && customServings > 0) {
-                    servingAdjustments[recipeId] = customServings;
-                }
-            });
-
-            // Generate shopping list immediately for better UX
+            // Generate shopping list with original recipe amounts only
             generateShoppingList({
-                recipeIds: selectedRecipes,
-                servingAdjustments: Object.keys(servingAdjustments).length > 0 ? servingAdjustments : undefined
+                recipeIds: selectedRecipes
             });
         } else if (selectedRecipes.length === 0) {
             // Clear shopping list when no recipes are selected
             setCurrentShoppingList(null);
         }
-    }, [selectedRecipes, selectedRecipeServings, isLoaded]); // Note: generateShoppingList is stable, so we don't need it in deps
+    }, [selectedRecipes, isLoaded]); // Note: generateShoppingList is stable, so we don't need it in deps
 
     // Utility functions
     const clearError = useCallback(() => setError(null), []);
@@ -144,30 +115,10 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
 
     const clearSelection = useCallback(() => {
         setSelectedRecipes([]);
-        setSelectedRecipeServings({});
         clearError();
     }, [clearError]);
 
     const isRecipeSelected = useCallback((recipeId: string) => selectedRecipes.includes(recipeId), [selectedRecipes]);
-
-    // Recipe serving adjustment functions
-    const updateRecipeServings = useCallback((recipeId: string, servings: number) => {
-        setSelectedRecipeServings(prev => {
-            // Only update if the value actually changed
-            if (prev[recipeId] === servings) {
-                return prev;
-            }
-            return {
-                ...prev,
-                [recipeId]: servings
-            };
-        });
-        clearError();
-    }, [clearError]);
-
-    const getRecipeServings = useCallback((recipeId: string) => {
-        return selectedRecipeServings[recipeId];
-    }, [selectedRecipeServings]);
 
     const generateShoppingList = useCallback(async (request: ShoppingListRequest) => {
         if (request.recipeIds.length === 0) {
@@ -210,7 +161,6 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
     const clearShoppingList = useCallback(() => {
         setCurrentShoppingList(null);
         setSelectedRecipes([]);
-        setSelectedRecipeServings({});
         clearError();
     }, [clearError]);
 
@@ -222,11 +172,6 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
         clearSelection,
         isRecipeSelected,
         selectedCount: selectedRecipes.length,
-
-        // Recipe serving adjustments
-        selectedRecipeServings,
-        updateRecipeServings,
-        getRecipeServings,
 
         // Shopping list generation
         currentShoppingList,

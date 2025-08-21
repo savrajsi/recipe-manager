@@ -61,8 +61,7 @@ const getNutritionForIngredient = (recipeIngredient: RecipeIngredient, ingredien
     const unit = recipeIngredient.unit.toLowerCase();
     const baseNutrition = ingredient.nutrition;
 
-    // Debug: Show input values
-    console.log(`DEBUG: ${ingredient.name} - category: "${ingredient.category}", unit: "${unit}", amount: ${amount}`);
+
 
     // Default multiplier - will be adjusted based on unit conversions
     let multiplier = amount;
@@ -80,19 +79,19 @@ const getNutritionForIngredient = (recipeIngredient: RecipeIngredient, ingredien
         case 'meat':
         case 'seafood':
         case 'protein':
-            console.log(`DEBUG: Hit dairy/meat/seafood/protein case for ${ingredient.name}`);
+
             // Nutrition data is typically per 100g (FDA standard for nutrition labels)
             if (unit === 'g' || unit === 'grams') {
                 multiplier = amount / 100; // Convert grams to 100g portions
-                console.log(`DEBUG: Using grams conversion: ${amount} / 100 = ${multiplier}`);
+
             } else if (unit === 'lb' || unit === 'pound') {
                 // 1 pound = 454 grams (standard conversion)
                 multiplier = (amount * 454) / 100; // Convert lb → grams → 100g portions
-                console.log(`DEBUG: Using pounds conversion: (${amount} * 454) / 100 = ${multiplier}`);
+
             } else if (unit === 'oz' || unit === 'ounce') {
                 // 1 ounce = 28.35 grams (standard conversion)
                 multiplier = (amount * 28.35) / 100; // Convert oz → grams → 100g portions
-                console.log(`DEBUG: Using ounces conversion: (${amount} * 28.35) / 100 = ${multiplier}`);
+
             }
             break;
 
@@ -100,29 +99,29 @@ const getNutritionForIngredient = (recipeIngredient: RecipeIngredient, ingredien
         case 'grain':
         case 'cereal':
         case 'pasta':
-            console.log(`DEBUG: Hit baking/grain/cereal/pasta case for ${ingredient.name}`);
+
             // Baking ingredients typically measured per cup in recipes
             if (unit === 'cup' || unit === 'cups') {
                 multiplier = amount; // Nutrition data is per cup
-                console.log(`DEBUG: Using cups conversion: ${amount} cups = ${multiplier}`);
+
             } else if (unit === 'lb' || unit === 'pound') {
                 // For pasta: nutrition data is per 100g, recipe uses pounds
                 // 1 pound = 454 grams (standard conversion)
                 multiplier = (amount * 454) / 100; // Convert lb → grams → 100g portions
-                console.log(`DEBUG: Using pounds-to-grams conversion: (${amount} * 454) / 100 = ${multiplier}`);
+
             }
             break;
 
         case 'dairy-alternative':
-            console.log(`DEBUG: Hit dairy-alternative case for ${ingredient.name}`);
+
             // Liquid alternatives typically measured in metric
             if (unit === 'ml' || unit === 'milliliter') {
                 multiplier = amount / 100; // Nutrition data per 100ml (standard for liquids)
-                console.log(`DEBUG: Using ml conversion: ${amount} / 100 = ${multiplier}`);
+
             } else if (unit === 'cup' || unit === 'cups') {
                 // 1 US cup = 240 milliliters (standard conversion)
                 multiplier = (amount * 240) / 100; // Convert cups → ml → 100ml portions
-                console.log(`DEBUG: Using cups-to-ml conversion: (${amount} * 240) / 100 = ${multiplier}`);
+
             }
             break;
 
@@ -130,15 +129,15 @@ const getNutritionForIngredient = (recipeIngredient: RecipeIngredient, ingredien
         case 'condiment':
         case 'sweetener':
         case 'spice':
-            console.log(`DEBUG: Hit oil/condiment/sweetener/spice case for ${ingredient.name}`);
+
             // Small quantities typically measured per tablespoon/teaspoon
             if (unit === 'tbsp' || unit === 'tablespoon') {
                 multiplier = amount; // Nutrition data is per tablespoon
-                console.log(`DEBUG: Using tablespoon conversion: ${amount} tbsp = ${multiplier}`);
+
             } else if (unit === 'tsp' || unit === 'teaspoon') {
                 // 1 tablespoon = 3 teaspoons (standard conversion)
                 multiplier = amount / 3; // Convert tsp → tbsp
-                console.log(`DEBUG: Using teaspoon conversion: ${amount} / 3 = ${multiplier}`);
+
             }
             break;
 
@@ -146,34 +145,33 @@ const getNutritionForIngredient = (recipeIngredient: RecipeIngredient, ingredien
         case 'fruit':
         case 'herb':
         case 'seaweed':
-            console.log(`DEBUG: Hit vegetable/fruit/herb/seaweed case for ${ingredient.name}`);
+
             // Produce typically measured per piece/item (natural units)
             if (unit === 'large' || unit === 'medium' || unit === 'small' || unit === 'whole' ||
                 unit === 'head' || unit === 'leaves' || unit === 'sheets' || unit === 'pieces') {
                 multiplier = amount; // Nutrition data is per piece/item
-                console.log(`DEBUG: Using piece/item conversion: ${amount} ${unit} = ${multiplier}`);
+
             } else if (unit === 'cup' || unit === 'cups') {
                 multiplier = amount; // For measured vegetables (like chopped broccoli)
-                console.log(`DEBUG: Using cups conversion for vegetables: ${amount} cups = ${multiplier}`);
+
             }
             break;
 
         case 'legume':
-            console.log(`DEBUG: Hit legume case for ${ingredient.name}`);
+
             // Canned goods typically measured per can
             if (unit === 'can') {
                 multiplier = amount; // Nutrition data is per can
-                console.log(`DEBUG: Using can conversion: ${amount} can = ${multiplier}`);
+
             }
             break;
 
         // Default case: assume nutrition data matches recipe unit (multiplier = amount)
         default:
-            console.log(`DEBUG: Using default case for ${ingredient.name} (category: ${ingredient.category})`);
+
     }
 
-    console.log(`DEBUG: Final multiplier for ${ingredient.name}: ${multiplier}`);
-    console.log(`DEBUG: Final calories: ${baseNutrition.calories} * ${multiplier} = ${baseNutrition.calories * multiplier}`);
+
 
     // Apply the calculated multiplier to all nutrition values
     return {
@@ -202,12 +200,11 @@ const calculateRecipeNutrition = (recipe: Recipe, ingredientsDb: Ingredient[]) =
             totalNutrition.carbs += nutrition.carbs;
             totalNutrition.fat += nutrition.fat;
 
-            // Debug logging to verify calculations
-            console.log(`${recipeIngredient.amount} ${recipeIngredient.unit} ${ingredient.name}: ${Math.round(nutrition.calories)} calories`);
+
         }
     });
 
-    console.log(`Total recipe calories: ${Math.round(totalNutrition.calories)}`);
+
     return totalNutrition;
 };
 

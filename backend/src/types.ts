@@ -21,6 +21,7 @@ export interface RecipeIngredient {
 export interface Recipe {
     id: string;
     title: string;
+    slug: string;
     description: string;
     servings: number;
     prepTime: string;
@@ -64,4 +65,5 @@ export interface RecipeQueryParams {
     tags?: string;
     ingredients?: string;
     difficulty?: 'easy' | 'medium' | 'hard';
+    mealTime?: string;
 }

@@ -19,10 +19,29 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 
-// Read data file
+// In-memory cache for recipe data
+let dataCache: RecipeData | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes for production (perfect for Railway deployment)
+
+// Enhanced getData with caching
 const getData = async (): Promise<RecipeData> => {
+    const now = Date.now();
+
+    // Return cached data if it's still fresh
+    if (dataCache && (now - cacheTimestamp) < CACHE_DURATION) {
+        console.log('📦 Using cached data');
+        return dataCache;
+    }
+
+    // Read fresh data from file
+    console.log('💾 Reading fresh data from disk...');
     const data = await fs.readFile(path.join(__dirname, '../db/data.json'), 'utf8');
-    return JSON.parse(data) as RecipeData;
+    dataCache = JSON.parse(data) as RecipeData;
+    cacheTimestamp = now;
+
+    console.log('✅ Data cache refreshed - will be valid for 30 minutes');
+    return dataCache;
 };
 
 // Utility function to parse ingredient amount (handles fractions and decimals)
@@ -224,6 +243,7 @@ const createDetailedRecipe = (recipe: Recipe, ingredientsDb: Ingredient[]): Deta
     return {
         id: recipe.id,
         title: recipe.title,
+        slug: recipe.slug,
         imageUrl: recipe.imageUrl,
         description: recipe.description,
         servings: recipe.servings,
@@ -240,14 +260,18 @@ const createDetailedRecipe = (recipe: Recipe, ingredientsDb: Ingredient[]): Deta
 };
 
 // Filter recipes based on query parameters
-const filterRecipes = (recipes: Recipe[], query: RecipeQueryParams): Recipe[] => {
+const filterRecipes = (recipes: Recipe[], query: RecipeQueryParams, ingredientsDb: Ingredient[]): Recipe[] => {
     return recipes.filter(recipe => {
-        // Search in title and description
+        // Search in title, description, and ingredient names
         if (query.search) {
             const searchLower = query.search.toLowerCase();
             const matchesSearch =
                 recipe.title.toLowerCase().includes(searchLower) ||
-                recipe.description.toLowerCase().includes(searchLower);
+                recipe.description.toLowerCase().includes(searchLower) ||
+                recipe.ingredients.some(recipeIng => {
+                    const ingredient = ingredientsDb.find(ing => ing.id === recipeIng.ingredientId);
+                    return ingredient && ingredient.name.toLowerCase().includes(searchLower);
+                });
             if (!matchesSearch) return false;
         }
 
@@ -256,7 +280,7 @@ const filterRecipes = (recipes: Recipe[], query: RecipeQueryParams): Recipe[] =>
             return false;
         }
 
-        // Filter by tags (OR logic: show recipes that match ANY of the selected tags)
+        // Filter by tags
         if (query.tags) {
             const queryTags = query.tags.split(',').map(tag => tag.trim().toLowerCase());
             const hasMatchingTag = queryTags.some(queryTag =>
@@ -269,7 +293,13 @@ const filterRecipes = (recipes: Recipe[], query: RecipeQueryParams): Recipe[] =>
         if (query.ingredients) {
             const queryIngredients = query.ingredients.split(',').map(ing => ing.trim().toLowerCase());
             const hasMatchingIngredient = queryIngredients.some(queryIng =>
-                recipe.ingredients.some(recipeIng => recipeIng.ingredientId.toLowerCase().includes(queryIng))
+                recipe.ingredients.some(recipeIng => {
+                    const ingredient = ingredientsDb.find(ing => ing.id === recipeIng.ingredientId);
+                    return ingredient && (
+                        recipeIng.ingredientId.toLowerCase().includes(queryIng) ||
+                        ingredient.name.toLowerCase().includes(queryIng)
+                    );
+                })
             );
             if (!hasMatchingIngredient) return false;
         }
@@ -290,7 +320,7 @@ app.get('/api/recipes', async (req: Request, res: Response) => {
         };
 
         // Filter recipes based on query parameters
-        const filteredRecipes = filterRecipes(data.recipes, query);
+        const filteredRecipes = filterRecipes(data.recipes, query, data.ingredients);
 
         // Add calories per serving to each recipe
         const recipesWithNutrition: RecipeWithNutrition[] = filteredRecipes.map(recipe =>
@@ -304,11 +334,17 @@ app.get('/api/recipes', async (req: Request, res: Response) => {
     }
 });
 
-// GET /api/recipes/:id - with full ingredient details
-app.get('/api/recipes/:id', async (req: Request, res: Response): Promise<void> => {
+// GET /api/recipes/:identifier - with full ingredient details (supports both ID and slug)
+app.get('/api/recipes/:identifier', async (req: Request, res: Response): Promise<void> => {
     try {
         const data = await getData();
-        const recipe = data.recipes.find(r => r.id === req.params.id);
+        const { identifier } = req.params;
+
+        // Try to find by ID first, then by slug
+        let recipe = data.recipes.find(r => r.id === identifier);
+        if (!recipe) {
+            recipe = data.recipes.find(r => r.slug === identifier);
+        }
 
         if (!recipe) {
             res.status(404).json({ error: 'Recipe not found' }); return;

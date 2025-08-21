@@ -3,6 +3,7 @@
     {
       "id": "1",
       "title": "Classic Margherita Pizza",
+      "slug": "classic-margherita-pizza",
       "imageUrl": "/images/recipes/margherita-pizza.jpeg",
       "description": "Traditional Italian pizza with fresh basil",
       "servings": 4,
@@ -29,6 +30,7 @@
     {
       "id": "2",
       "title": "Chocolate Chip Cookies",
+      "slug": "chocolate-chip-cookies",
       "imageUrl": "/images/recipes/chocolate-chip-cookies.jpg",
       "description": "Soft and chewy classic cookies",
       "servings": 24,
@@ -54,6 +56,7 @@
     {
       "id": "3",
       "title": "Chicken Stir-Fry",
+      "slug": "chicken-stir-fry",
       "imageUrl": "/images/recipes/chicken-stir-fry.jpg",
       "description": "Quick and healthy weeknight dinner",
       "servings": 4,
@@ -80,6 +83,7 @@
     {
       "id": "4",
       "title": "Beef Tacos",
+      "slug": "beef-tacos",
       "imageUrl": "/images/recipes/beef-tacos.jpg",
       "description": "Authentic Mexican street tacos",
       "servings": 6,
@@ -106,6 +110,7 @@
     {
       "id": "5",
       "title": "Greek Salad",
+      "slug": "greek-salad",
       "imageUrl": "/images/recipes/greek-salad.jpg",
       "description": "Fresh Mediterranean salad",
       "servings": 4,
@@ -132,6 +137,7 @@
     {
       "id": "6",
       "title": "Sushi Roll",
+      "slug": "sushi-roll",
       "imageUrl": "/images/recipes/sushi-roll.jpg",
       "description": "California roll with fresh ingredients",
       "servings": 4,
@@ -158,6 +164,7 @@
     {
       "id": "7",
       "title": "Vegetable Curry",
+      "slug": "vegetable-curry",
       "imageUrl": "/images/recipes/indian-vegetable-curry.jpg",
       "description": "Spicy Indian curry",
       "servings": 6,
@@ -184,6 +191,7 @@
     {
       "id": "8",
       "title": "Berry Smoothie Bowl",
+      "slug": "berry-smoothie-bowl",
       "imageUrl": "/images/recipes/berry-smoothie-bowl.jpg",
       "description": "Healthy breakfast bowl",
       "servings": 2,
@@ -210,6 +218,7 @@
     {
       "id": "9",
       "title": "Pasta Carbonara",
+      "slug": "pasta-carbonara",
       "imageUrl": "/images/recipes/pasta-carbonara.jpg",
       "description": "Classic Italian pasta dish",
       "servings": 4,
@@ -236,6 +245,7 @@
     {
       "id": "10",
       "title": "Quinoa Buddha Bowl",
+      "slug": "quinoa-buddha-bowl",
       "imageUrl": "/images/recipes/quinoa-buddha-bowl.jpg",
       "description": "Nutritious grain bowl",
       "servings": 2,

@@ -79,3 +79,8 @@ Note: Feel free to use whatever frontend or backend framework you want. The samp
 - Test your application with different scenarios
 
 Good luck! We're excited to see your implementation.
+
+
+## Candidate Notes 
+
+

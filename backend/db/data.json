@@ -3,6 +3,7 @@
     {
       "id": "1",
       "title": "Classic Margherita Pizza",
+      "imageUrl": "/images/recipes/margherita-pizza.jpeg",
       "description": "Traditional Italian pizza with fresh basil",
       "servings": 4,
       "prepTime": "20 minutes",
@@ -28,6 +29,7 @@
     {
       "id": "2",
       "title": "Chocolate Chip Cookies",
+      "imageUrl": "/images/recipes/chocolate-chip-cookies.jpg",
       "description": "Soft and chewy classic cookies",
       "servings": 24,
       "prepTime": "15 minutes",
@@ -52,6 +54,7 @@
     {
       "id": "3",
       "title": "Chicken Stir-Fry",
+      "imageUrl": "/images/recipes/chicken-stir-fry.jpg",
       "description": "Quick and healthy weeknight dinner",
       "servings": 4,
       "prepTime": "25 minutes",
@@ -77,6 +80,7 @@
     {
       "id": "4",
       "title": "Beef Tacos",
+      "imageUrl": "/images/recipes/beef-tacos.jpg",
       "description": "Authentic Mexican street tacos",
       "servings": 6,
       "prepTime": "20 minutes",
@@ -102,6 +106,7 @@
     {
       "id": "5",
       "title": "Greek Salad",
+      "imageUrl": "/images/recipes/greek-salad.jpg",
       "description": "Fresh Mediterranean salad",
       "servings": 4,
       "prepTime": "15 minutes",
@@ -127,6 +132,7 @@
     {
       "id": "6",
       "title": "Sushi Roll",
+      "imageUrl": "/images/recipes/sushi-roll.jpg",
       "description": "California roll with fresh ingredients",
       "servings": 4,
       "prepTime": "30 minutes",
@@ -152,6 +158,7 @@
     {
       "id": "7",
       "title": "Vegetable Curry",
+      "imageUrl": "/images/recipes/indian-vegetable-curry.jpg",
       "description": "Spicy Indian curry",
       "servings": 6,
       "prepTime": "25 minutes",
@@ -177,6 +184,7 @@
     {
       "id": "8",
       "title": "Berry Smoothie Bowl",
+      "imageUrl": "/images/recipes/berry-smoothie-bowl.jpg",
       "description": "Healthy breakfast bowl",
       "servings": 2,
       "prepTime": "10 minutes",
@@ -202,6 +210,7 @@
     {
       "id": "9",
       "title": "Pasta Carbonara",
+      "imageUrl": "/images/recipes/pasta-carbonara.jpg",
       "description": "Classic Italian pasta dish",
       "servings": 4,
       "prepTime": "15 minutes",
@@ -227,6 +236,7 @@
     {
       "id": "10",
       "title": "Quinoa Buddha Bowl",
+      "imageUrl": "/images/recipes/quinoa-buddha-bowl.jpg",
       "description": "Nutritious grain bowl",
       "servings": 2,
       "prepTime": "20 minutes",
@@ -570,6 +580,75 @@
       "category": "condiment",
       "nutrition": {"calories": 89, "protein": 3, "carbs": 3, "fat": 8},
       "commonAllergens": ["sesame"],
+      "dietary": ["vegan", "gluten-free"]
+    },
+    {
+      "id": "basil",
+      "name": "Fresh Basil",
+      "category": "herb",
+      "nutrition": {
+        "calories": 1,
+        "protein": 0.1,
+        "carbs": 0.1,
+        "fat": 0.0
+      },
+      "commonAllergens": [],
+      "dietary": ["vegan", "gluten-free"]
+    },
+    {
+      "id": "butter",
+      "name": "Unsalted Butter",
+      "category": "dairy",
+      "nutrition": {"calories": 1628, "protein": 2, "carbs": 0, "fat": 184},
+      "commonAllergens": ["dairy"],
+      "dietary": ["vegetarian", "gluten-free"]
+    },
+    {
+      "id": "brown_sugar",
+      "name": "Brown Sugar",
+      "category": "sweetener",
+      "nutrition": {"calories": 836, "protein": 0, "carbs": 216, "fat": 0},
+      "commonAllergens": [],
+      "dietary": ["vegan", "gluten-free"]
+    },
+    {
+      "id": "white_sugar",
+      "name": "White Sugar",
+      "category": "sweetener",
+      "nutrition": {"calories": 774, "protein": 0, "carbs": 200, "fat": 0},
+      "commonAllergens": [],
+      "dietary": ["vegan", "gluten-free"]
+    },
+    {
+      "id": "broccoli",
+      "name": "Fresh Broccoli",
+      "category": "vegetable",
+      "nutrition": {"calories": 25, "protein": 3, "carbs": 5, "fat": 0},
+      "commonAllergens": [],
+      "dietary": ["vegan", "gluten-free"]
+    },
+    {
+      "id": "carrot",
+      "name": "Fresh Carrot",
+      "category": "vegetable",
+      "nutrition": {"calories": 25, "protein": 0.5, "carbs": 6, "fat": 0},
+      "commonAllergens": [],
+      "dietary": ["vegan", "gluten-free"]
+    },
+    {
+      "id": "soy_sauce",
+      "name": "Soy Sauce",
+      "category": "condiment",
+      "nutrition": {"calories": 10, "protein": 1.5, "carbs": 1, "fat": 0},
+      "commonAllergens": ["soy", "wheat"],
+      "dietary": ["vegan"]
+    },
+    {
+      "id": "ginger",
+      "name": "Fresh Ginger",
+      "category": "spice",
+      "nutrition": {"calories": 4, "protein": 0.1, "carbs": 1, "fat": 0},
+      "commonAllergens": [],
       "dietary": ["vegan", "gluten-free"]
     }
   ]
